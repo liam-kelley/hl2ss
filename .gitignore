@@ -23,6 +23,3 @@ extensions/client_cpp/.vscode/
 extensions/client_matlab/.vscode/
 calibration/*
 !/calibration/README.md
-
-viewer/*
-!viewer/lk*
