@@ -1,0 +1,5 @@
+*.wav
+!ESS_x5_1second_pause.wav
+!countdown_beep_loud.wav
+!source_get_ready_warning.wav
+!white_noise_48kHz_1second.wav
