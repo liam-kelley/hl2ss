@@ -1,4 +1,5 @@
 
+#include "personal_video.h"
 #include "lock.h"
 #include "custom_video_effect.h"
 #include "nfo.h"
@@ -18,6 +19,7 @@ using namespace winrt::Windows::Media::Capture::Frames;
 // Global Variables
 //-----------------------------------------------------------------------------
 
+static NamedMutex g_mutex;
 static CRITICAL_SECTION g_lock; // DeleteCriticalSection
 static HANDLE g_event = NULL;
 
@@ -31,6 +33,12 @@ static MediaFrameSource g_videoSource = nullptr;
 //-----------------------------------------------------------------------------
 
 // OK
+void PersonalVideo_RegisterNamedMutex(wchar_t const* name)
+{
+    g_mutex.Create(name);
+}
+
+// OK
 static void PersonalVideo_OnFailed(MediaCapture const&, MediaCaptureFailedEventArgs const& b)
 {
     ShowMessage(L"PersonalVideo_OnFailed - 0x%X : '%s'", b.Code(), b.Message().c_str());
@@ -40,7 +48,7 @@ static void PersonalVideo_OnFailed(MediaCapture const&, MediaCaptureFailedEventA
 // OK
 static bool PersonalVideo_FindMediaSourceGroup(uint32_t width, uint32_t height, double framerate, MediaFrameSourceGroup &sourceGroup, MediaCaptureVideoProfile &profile, MediaCaptureVideoProfileMediaDescription &description)
 {
-    auto mediaFrameSourceGroup = MediaFrameSourceGroup::FromIdAsync(GetBuiltInVideoCaptureId()).get();
+    auto const& mediaFrameSourceGroup = MediaFrameSourceGroup::FromIdAsync(GetBuiltInVideoCaptureId()).get();
 
     for (auto const& knownVideoProfile : MediaCapture::FindKnownVideoProfiles(mediaFrameSourceGroup.Id(), KnownVideoProfile::VideoConferencing))
     {
@@ -110,6 +118,8 @@ void PersonalVideo_RegisterEvent(HANDLE h)
 // OK
 void PersonalVideo_Open(MRCVideoOptions const& options)
 {
+    if (!g_mutex.Acquire(0)) { return; }
+
     uint32_t const width     = 1920;
     uint32_t const height    = 1080;
     double   const framerate = 30;
@@ -163,6 +173,8 @@ void PersonalVideo_Close()
     g_mediaCapture = nullptr;
 
     g_ready = false;
+
+    g_mutex.Release();
 }
 
 // OK
@@ -365,4 +377,69 @@ void PersonalVideo_SetBacklightCompensation(bool enable)
     CriticalSection cs(&g_lock);
     if (!g_ready || g_shared) { return; }
     g_mediaCapture.VideoDeviceController().BacklightCompensation().TrySetValue(enable ? 1.0 : 0.0);
+}
+
+// OK
+void PersonalVideo_SetDesiredOptimization(uint32_t mode)
+{
+    CriticalSection cs(&g_lock);
+    if (!g_ready || g_shared) { return; }
+    if (mode > 6) { return; }
+    g_mediaCapture.VideoDeviceController().DesiredOptimization((MediaCaptureOptimization)mode);
+}
+
+// OK
+void PersonalVideo_SetPrimaryUse(uint32_t mode)
+{
+    CriticalSection cs(&g_lock);
+    if (!g_ready || g_shared) { return; }
+    if (mode > 2) { return; }
+    g_mediaCapture.VideoDeviceController().PrimaryUse((CaptureUse)mode);
+}
+
+// OK
+void PersonalVideo_SetOpticalImageStabilization(uint32_t mode)
+{
+    CriticalSection cs(&g_lock);
+    if (!g_ready || g_shared) { return; }
+    if (mode > 1) { return; }
+    g_mediaCapture.VideoDeviceController().OpticalImageStabilizationControl().Mode((OpticalImageStabilizationMode)mode);
+}
+
+// OK
+void PersonalVideo_SetHdrVideo(uint32_t mode)
+{
+    CriticalSection cs(&g_lock);
+    if (!g_ready || g_shared) { return; }
+    if (mode > 2) { return; }
+    g_mediaCapture.VideoDeviceController().HdrVideoControl().Mode((HdrVideoMode)mode);
+}
+
+// OK
+void PersonalVideo_SetRegionsOfInterest(bool clear, bool set, bool auto_exposure, bool auto_focus, bool bounds_normalized, float x, float y, float w, float h, uint32_t type, uint32_t weight)
+{
+    RegionOfInterest roi;
+
+    CriticalSection cs(&g_lock);
+    if (!g_ready || g_shared) { return; }
+
+    auto const& mc = g_mediaCapture.VideoDeviceController().RegionsOfInterestControl();
+
+    if (clear)
+    {
+    mc.ClearRegionsAsync().get();
+    }
+
+    if (set)
+    {
+    roi.AutoExposureEnabled(auto_exposure);
+    roi.AutoFocusEnabled(auto_focus);
+    roi.AutoWhiteBalanceEnabled(false);
+    roi.Bounds({ x, y, w, h });
+    roi.BoundsNormalized(bounds_normalized);
+    roi.Type((RegionOfInterestType)(type & 1));
+    roi.Weight(weight % 101);
+
+    mc.SetRegionsAsync({ roi }).get();
+    }
 }

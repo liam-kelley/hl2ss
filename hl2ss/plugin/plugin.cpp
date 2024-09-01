@@ -1,14 +1,14 @@
 ﻿
 #include <mfapi.h>
 #include "configuration.h"
-#include "ipc.h"
-#include "plugin.h"
 
+#include "../hl2ss/plugin.h"
 #include "../hl2ss/server.h"
 #include "../hl2ss/timestamps.h"
 #include "../hl2ss/log.h"
 #include "../hl2ss/nfo.h"
 #include "../hl2ss/types.h"
+#include "../hl2ss/lock.h"
 #include "../hl2ss/locator.h"
 #include "../hl2ss/research_mode.h"
 #include "../hl2ss/spatial_input.h"
@@ -24,6 +24,7 @@
 #include "../hl2ss/ipc_sm.h"
 #include "../hl2ss/ipc_su.h"
 #include "../hl2ss/ipc_vi.h"
+#include "../hl2ss/ipc_mq.h"
 #include "../hl2ss/stream_eet.h"
 #include "../hl2ss/stream_ea.h"
 #include "../hl2ss/stream_ev.h"
@@ -40,7 +41,7 @@ using namespace winrt::Windows::ApplicationModel::Core;
 //-----------------------------------------------------------------------------
 
 // OK
-UNITY_EXPORT
+HL2SS_PLUGIN_EXPORT
 void InitializeStreams(uint32_t enable)
 {
     InitializeSockets();
@@ -67,10 +68,11 @@ void InitializeStreams(uint32_t enable)
     if (enable & HL2SS_ENABLE_EET) { EET_Initialize(); }
     if (enable & HL2SS_ENABLE_EA) { EA_Initialize(); }
     if (enable & HL2SS_ENABLE_EV) { EV_Initialize(); }
+    if (enable & HL2SS_ENABLE_MQX) { MQX_Initialize(); }
 }
 
 // OK
-UNITY_EXPORT
+HL2SS_PLUGIN_EXPORT
 void InitializeStreamsOnUI(uint32_t enable)
 {
     HANDLE event_done = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -80,14 +82,14 @@ void InitializeStreamsOnUI(uint32_t enable)
 }
 
 // OK
-UNITY_EXPORT
+HL2SS_PLUGIN_EXPORT
 void DebugMessage(char const* str)
 {
     ShowMessage("%s", str);
 }
 
 // OK
-UNITY_EXPORT
+HL2SS_PLUGIN_EXPORT
 void GetLocalIPv4Address(wchar_t *buffer, int size)
 {
     std::vector<wchar_t> address;
@@ -96,7 +98,7 @@ void GetLocalIPv4Address(wchar_t *buffer, int size)
 }
 
 // OK
-UNITY_EXPORT
+HL2SS_PLUGIN_EXPORT
 int OverrideWorldCoordinateSystem(void* scs_ptr)
 {
     winrt::Windows::Perception::Spatial::SpatialCoordinateSystem scs = nullptr;

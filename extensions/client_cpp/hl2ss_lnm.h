@@ -20,7 +20,7 @@ std::vector<uint64_t> get_video_codec_default_options(uint16_t width, uint16_t h
 //------------------------------------------------------------------------------
 
 uint64_t get_sync_frame_stamp(uint64_t frame_stamp, uint64_t sync_period);
-uint64_t get_sync_period(hl2ss::rx* rx);
+uint64_t get_sync_period(hl2ss::rx const* rx);
 
 //------------------------------------------------------------------------------
 // Control
@@ -52,6 +52,8 @@ std::shared_ptr<hl2ss::calibration_rm_depth_ahat> download_calibration_rm_depth_
 std::shared_ptr<hl2ss::calibration_rm_depth_longthrow> download_calibration_rm_depth_longthrow(char const* host, uint16_t port);
 std::shared_ptr<hl2ss::calibration_rm_imu> download_calibration_rm_imu(char const* host, uint16_t port);
 std::shared_ptr<hl2ss::calibration_pv> download_calibration_pv(char const* host, uint16_t port, uint16_t width, uint16_t height, uint8_t framerate);
+std::shared_ptr<std::vector<uint8_t>> download_devicelist_extended_audio(char const* host, uint16_t port);
+std::shared_ptr<std::vector<uint8_t>> download_devicelist_extended_video(char const* host, uint16_t port);
 
 //------------------------------------------------------------------------------
 // IPC
@@ -62,5 +64,6 @@ std::unique_ptr<hl2ss::ipc_sm> ipc_sm(char const* host, uint16_t port);
 std::unique_ptr<hl2ss::ipc_su> ipc_su(char const* host, uint16_t port);
 std::unique_ptr<hl2ss::ipc_vi> ipc_vi(char const* host, uint16_t port);
 std::unique_ptr<hl2ss::ipc_umq> ipc_umq(char const* host, uint16_t port);
+std::unique_ptr<hl2ss::ipc_gmq> ipc_gmq(char const* host, uint16_t port);
 }
 }

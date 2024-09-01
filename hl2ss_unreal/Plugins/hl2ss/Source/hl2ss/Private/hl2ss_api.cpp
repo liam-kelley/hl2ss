@@ -16,6 +16,14 @@ typedef void(*pfn_MQ_SI_Pop)(uint32_t& command, uint8_t* data);
 typedef void(*pfn_MQ_SO_Push)(uint32_t id);
 typedef void(*pfn_MQ_Restart)();
 
+typedef uint32_t(*pfn_MQX_CO_Peek)();
+typedef void(*pfn_MQX_CO_Pop)(uint32_t& id);
+typedef void(*pfn_MQX_CI_Push)(uint32_t command, uint32_t size, uint8_t const* data);
+typedef void(*pfn_MQX_Restart)();
+
+typedef void(*pfn_PersonalVideo_RegisterNamedMutex)(wchar_t const* name);
+typedef void(*pfn_ExtendedVideo_RegisterNamedMutex)(wchar_t const* name);
+
 #if PLATFORM_HOLOLENS
 extern "C" { HMODULE LoadLibraryW(LPCWSTR lpLibFileName); }
 #endif
@@ -33,6 +41,14 @@ void* hl2ss_api::p_MQ_SI_Peek = NULL;
 void* hl2ss_api::p_MQ_SI_Pop = NULL;
 void* hl2ss_api::p_MQ_SO_Push = NULL;
 void* hl2ss_api::p_MQ_Restart = NULL;
+
+void* hl2ss_api::p_MQX_CO_Peek = NULL;
+void* hl2ss_api::p_MQX_CO_Pop = NULL;
+void* hl2ss_api::p_MQX_CI_Push = NULL;
+void* hl2ss_api::p_MQX_Restart = NULL;
+
+void* hl2ss_api::p_PersonalVideo_RegisterNamedMutex = NULL;
+void* hl2ss_api::p_ExtendedVideo_RegisterNamedMutex = NULL;
 
 int hl2ss_api::Load()
 {
@@ -66,6 +82,14 @@ int hl2ss_api::Load()
     p_MQ_SO_Push = GetProcAddress((HMODULE)hmod_hl2ss, "MQ_SO_Push");
     p_MQ_Restart = GetProcAddress((HMODULE)hmod_hl2ss, "MQ_Restart");
 
+    p_MQX_CO_Peek = GetProcAddress((HMODULE)hmod_hl2ss, "MQX_CO_Peek");
+    p_MQX_CO_Pop = GetProcAddress((HMODULE)hmod_hl2ss, "MQX_CO_Pop");
+    p_MQX_CI_Push = GetProcAddress((HMODULE)hmod_hl2ss, "MQX_CI_Push");
+    p_MQX_Restart = GetProcAddress((HMODULE)hmod_hl2ss, "MQX_Restart");
+
+    p_PersonalVideo_RegisterNamedMutex = GetProcAddress((HMODULE)hmod_hl2ss, "PersonalVideo_RegisterNamedMutex");
+    p_ExtendedVideo_RegisterNamedMutex = GetProcAddress((HMODULE)hmod_hl2ss, "ExtendedVideo_RegisterNamedMutex");
+
     if (p_InitializeStreams == NULL) { return -7; }
     if (p_DebugMessage == NULL) { return -8; }
     if (p_OverrideWorldCoordinateSystem == NULL) { return -9; }
@@ -75,6 +99,14 @@ int hl2ss_api::Load()
     if (p_MQ_SI_Pop == NULL) { return -12; }
     if (p_MQ_SO_Push == NULL) { return -13; }
     if (p_MQ_Restart == NULL) { return -14; }
+
+    if (p_MQX_CO_Peek == NULL) { return -15; }
+    if (p_MQX_CO_Pop == NULL) { return -16; }
+    if (p_MQX_CI_Push == NULL) { return -17; }
+    if (p_MQX_Restart == NULL) { return -18; }
+
+    if (p_PersonalVideo_RegisterNamedMutex == NULL) { return -19; }
+    if (p_ExtendedVideo_RegisterNamedMutex == NULL) { return -20; }
 
     return 1;
 }
@@ -132,4 +164,40 @@ void hl2ss_api::MQ_Restart()
 {
     if (p_MQ_Restart == NULL) { return; }
     reinterpret_cast<pfn_MQ_Restart>(p_MQ_Restart)();
+}
+
+uint32_t hl2ss_api::MQX_CO_Peek()
+{
+    if (p_MQX_CO_Peek == NULL) { return 0xFFFFFFFF; }
+    return reinterpret_cast<pfn_MQX_CO_Peek>(p_MQX_CO_Peek)();
+}
+
+void hl2ss_api::MQX_CO_Pop(uint32_t& id)
+{
+    if (p_MQX_CO_Pop == NULL) { return; }
+    reinterpret_cast<pfn_MQX_CO_Pop>(p_MQX_CO_Pop)(id);
+}
+
+void hl2ss_api::MQX_CI_Push(uint32_t command, uint32_t size, uint8_t const* data)
+{
+    if (p_MQX_CI_Push == NULL) { return; }
+    reinterpret_cast<pfn_MQX_CI_Push>(p_MQX_CI_Push)(command, size, data);
+}
+
+void hl2ss_api::MQX_Restart()
+{
+    if (p_MQX_Restart == NULL) { return; }
+    reinterpret_cast<pfn_MQX_Restart>(p_MQX_Restart)();
+}
+
+void hl2ss_api::PersonalVideo_RegisterNamedMutex(wchar_t const* name)
+{
+    if (p_PersonalVideo_RegisterNamedMutex == NULL) { return; }
+    reinterpret_cast<pfn_PersonalVideo_RegisterNamedMutex>(p_PersonalVideo_RegisterNamedMutex)(name);
+}
+
+void hl2ss_api::ExtendedVideo_RegisterNamedMutex(wchar_t const* name)
+{
+    if (p_ExtendedVideo_RegisterNamedMutex == NULL) { return; }
+    reinterpret_cast<pfn_ExtendedVideo_RegisterNamedMutex>(p_ExtendedVideo_RegisterNamedMutex)(name);
 }
