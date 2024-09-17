@@ -79,17 +79,17 @@ def rec_sesh_manager(overall_script_stop_event : Event,
             # Start time
             session_running_flag.set()
             
-            for _ in range(4):
-                print("Time to get set up...")
+            for i in range(5):
+                print(f"{i} seconds to get set up...")
                 time.sleep(1)
         
-            # Do n_recordings recordings each separated by 3 countdown beeps
+            # Do n_recordings recordings each separated by 10 countdown beeps
             i=0
             while not interrupt_session.is_set() and i < n_recordings:
                 i+=1
                 # Do countdown
-                print(f"Starting countdown...")
-                for _ in range(5):
+                print(f"Starting 10 seconds of exploration...")
+                for _ in range(10):
                     # Play audio beep 1sec
                     instruction_queues["audio_player"].put("countdown_beep")
                     # Wait for audio end
@@ -107,7 +107,7 @@ def rec_sesh_manager(overall_script_stop_event : Event,
                 assert (msg := out_queues["audio_player"].get()) == "white_blast_done", f"Expected 'white_blast_done', but got {msg}"
                 
                 # this is here because its also used by the mesh recorder... somehow.
-                # TODO make this a lot better. by making a position process, which sends the first position to the mesh.
+                # TODO Could make this a lot better. By making another position process, which also sends the first position to the mesh.
                 stop_audio_recording.clear()
                 
                 # Signal to record mesh and image
@@ -208,8 +208,6 @@ def rec_sesh_manager(overall_script_stop_event : Event,
             break
         else:
             print(f"Unexpected messsage in rec session manager instruction queue: {msg}")
-    
-    
      
     # Stop
     print("rec_session_manager_process stopped.")
@@ -459,10 +457,10 @@ def audio_recorder(overall_script_stop_event : Event,
 def image_recorder(overall_script_stop_event : Event,
                 instruction_queue : mp.Queue,
                 out_queue : mp.Queue,
-                receiver: hl2ss.rx_pv,
+                receivers: dict, # str : receiver
                 visualize : bool = False):
     '''
-    This will download and save an image for you
+    This will download and save PV, VLC and Depth images for you
     '''
 
     out_queue.put("started")
@@ -471,35 +469,133 @@ def image_recorder(overall_script_stop_event : Event,
         msg = instruction_queue.get()
         if msg[:9] == "rec_start":
             try :
-                # get image
-                receiver.open()
-                data = receiver.get_next_packet()
-                receiver.close()
+                #------------------------------------------------------------
+                # Personal Video --------------------------------------------
+                #------------------------------------------------------------
+                
+                # get pv image
+                receivers["PERSONAL_VIDEO"].open()
+                data = receivers["PERSONAL_VIDEO"].get_next_packet()
+                receivers["PERSONAL_VIDEO"].close()
                 
                 # Save image as png
                 datapoint = msg[9:]
-                img_path = os.path.join("dataset",datapoint,"image",'pv.png')
+                img_path = os.path.join("dataset",datapoint,"image", 'PERSONAL_VIDEO.png')
                 make_sure_path(img_path)
                 plt.imsave(img_path, data.payload.image)
 
-                # Save extra info just in case someone wants it
-                txt_path = os.path.join("dataset",datapoint,"image",'more_info.txt')
-                make_sure_path(txt_path)
-                info = f'Pose at time {data.timestamp}\n'
-                info += f'{str(data.pose)}\n'
+                # Get extra info
+                info = 'Personal Video\n'
+                info += f'Frame captured at {data.timestamp}\n'
                 info += f'Focal length: {data.payload.focal_length}\n'
-                info += f'Principal point: {data.payload.principal_point}'
+                info += f'Principal point: {data.payload.principal_point}\n'
+                info += f'Exposure Time: {data.payload.exposure_time}\n'
+                info += f'Exposure Compensation: {data.payload.exposure_compensation}\n'
+                info += f'Lens Position (Focus): {data.payload.lens_position}\n'
+                info += f'Focus State: {data.payload.focus_state}\n'
+                info += f'ISO Speed: {data.payload.iso_speed}\n'
+                info += f'White Balance: {data.payload.white_balance}\n'
+                info += f'ISO Gains: {data.payload.iso_gains}\n'
+                info += f'White Balance Gains: {data.payload.white_balance_gains}\n'
+                info += f'Pose\n'
+                info += str(data.pose)
+                
+                # Save extra info
+                txt_path = os.path.join("dataset",datapoint,"image",'PERSONAL_VIDEO.txt')
+                make_sure_path(txt_path)
                 with open(txt_path, 'w') as file:
                     file.write(info)
-
+                
                 # visualization
                 if visualize:
                     plt.imshow(data.payload.image)
                     plt.axis('off')  # Turn off axis numbers and ticks
                     plt.show()
+                    
+                #------------------------------------------------------------
+                # VLC cameras -----------------------------------------------
+                #------------------------------------------------------------
                 
-                # Signal that the image was saved
+                for channel, receiver in receivers:
+                    if channel[:6] == "RM_VLC":
+                        # get vlc image
+                        receiver.open()
+                        data = receiver.get_next_packet()
+                        receiver.close()
+                        
+                        # Save image as png
+                        datapoint = msg[9:]
+                        img_path = os.path.join("dataset",datapoint,"image", f'{channel}.png')
+                        make_sure_path(img_path)
+                        plt.imsave(img_path, data.payload.image)
+                        
+                        # Get extra info
+                        info = f'{channel}\n'
+                        info += f'Frame captured at {data.timestamp}\n'
+                        info += f'Sensor Ticks: {data.payload.sensor_ticks}\n'
+                        info += f'Exposure: {data.payload.exposure}\n'
+                        info += f'Gain: {data.payload.gain}\n'
+                        info += f'Pose\n'
+                        info += str(data.pose)
+                
+                        # Save extra info
+                        txt_path = os.path.join("dataset",datapoint,"image",f'{channel}.txt')
+                        make_sure_path(txt_path)
+                        with open(txt_path, 'w') as file:
+                            file.write(info)
+                            
+                        if visualize:
+                            plt.imshow(data.payload.image)
+                            plt.axis('off')  # Turn off axis numbers and ticks
+                            plt.show()
+                
+                #------------------------------------------------------------
+                # Depth Cameras -----------------------------------------------
+                #------------------------------------------------------------
+                
+                for channel, receiver in receivers:
+                    if channel[:8] == "RM_DEPTH":
+                        # get vlc image
+                        receiver.open()
+                        data = receiver.get_next_packet()
+                        receiver.close()
+                        
+                        # Save images as png
+                        datapoint = msg[9:]
+                        img_path = os.path.join("dataset",datapoint,"image", f'{channel}_depth.png')
+                        make_sure_path(img_path)
+                        plt.imsave(img_path, data.payload.depth)
+                        img_path = os.path.join("dataset",datapoint,"image", f'{channel}_ab.png')
+                        make_sure_path(img_path)
+                        plt.imsave(img_path, data.payload.ab)
+                        
+                        # Get extra info
+                        info = f'{channel}\n'
+                        info += f'Frame captured at {data.timestamp}\n'
+                        info += f'Sensor Ticks: {data.payload.sensor_ticks}\n'
+                        info += f'Pose\n'
+                        info += str(data.pose)
+                
+                        # Save extra info
+                        txt_path = os.path.join("dataset",datapoint,"image",f'{channel}.txt')
+                        make_sure_path(txt_path)
+                        with open(txt_path, 'w') as file:
+                            file.write(info)
+                            
+                        if visualize:
+                            plt.imshow(data.payload.depth)
+                            plt.axis('off')  # Turn off axis numbers and ticks
+                            plt.imshow(data.payload.ab)
+                            plt.axis('off')  # Turn off axis numbers and ticks
+                            plt.show()
+                
+                #------------------------------------------------------------
+                # End -------------------------------------------------------
+                #------------------------------------------------------------
+                
+                # Signal that the images were saved
                 out_queue.put("done")
+                
             except Exception as e:
                 # Put the error message in the queue
                 out_queue.put(f"Error in image_recorder: {str(e)}")

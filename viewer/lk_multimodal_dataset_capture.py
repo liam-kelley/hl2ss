@@ -101,7 +101,7 @@ if __name__ == '__main__':
         # "EXTENDED_EYE_TRACKER" : hl2ss_lnm.rx_eet(pargs.host, hl2ss.StreamPort.EXTENDED_EYE_TRACKER, fps=eet_fps),
         # "EXTENDED_AUDIO" : hl2ss_lnm.rx_extended_audio(pargs.host, hl2ss.StreamPort.EXTENDED_AUDIO, decoded=False),
     }
-    
+
     # Start PV Subsystem if PV is selected
     if ("PERSONAL_VIDEO" in channels):
         hl2ss_lnm.start_subsystem_pv(pargs.host, hl2ss.StreamPort.PERSONAL_VIDEO)
@@ -164,11 +164,19 @@ if __name__ == '__main__':
                                             receivers["MICROPHONE"],
                                             pargs.visualize))
     # Image process
+    img_receivers = {
+        "PERSONAL_VIDEO" : receivers["PERSONAL_VIDEO"],
+        "RM_VLC_LEFTFRONT" : receivers["RM_VLC_LEFTFRONT"],
+        "RM_VLC_LEFTLEFT" : receivers["RM_VLC_LEFTLEFT"],
+        "RM_VLC_RIGHTFRONT" : receivers["RM_VLC_RIGHTFRONT"],
+        "RM_VLC_RIGHTRIGHT" : receivers["RM_VLC_RIGHTRIGHT"],
+        "RM_DEPTH_LONGTHROW" : receivers["RM_DEPTH_LONGTHROW"],
+    }
     image_recorder_process = mp.Process(target=lk_hl2ss.image_recorder,
                                         args=(overall_script_stop_event,
                                             instruction_queues["image_recorder"],
                                             out_queues["image_recorder"],
-                                            receivers["PERSONAL_VIDEO"],
+                                            img_receivers,
                                             pargs.visualize))
     
     # Start all processes
