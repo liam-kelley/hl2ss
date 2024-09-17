@@ -1,5 +1,6 @@
 from pynput import keyboard
 from queue import Empty
+import traceback
 
 import os
 import threading
@@ -313,8 +314,9 @@ def mesh_recorder(overall_script_stop_event : Event,
                 
             except Exception as e:
                 # Put the error message in the queue
-                out_queue.put(f"Error in mesh recorder: {str(e)}")
-                
+                error_message = f"Error in mesh_recorder: {str(e)}\n{traceback.format_exc()}"
+                out_queue.put(error_message)
+                    
         elif msg == "stop":
             break
         else:
@@ -379,7 +381,8 @@ def audio_player(overall_script_stop_event : Event,
                 
         except Exception as e:
             # Put the error message in the queue
-            out_queue.put(f"Error in audio_player: {str(e)}")
+            error_message = f"Error in audio_player: {str(e)}\n{traceback.format_exc()}"
+            out_queue.put(error_message)
     
     # Stop
     print("audio_player_process stopped.")
@@ -443,7 +446,8 @@ def audio_recorder(overall_script_stop_event : Event,
                 out_queue.put("done")
             except Exception as e:
                 # Put the error message in the queue
-                out_queue.put(f"Error in audio_recorder: {str(e)}")  
+                error_message = f"Error in audio_recorder: {str(e)}\n{traceback.format_exc()}"
+                out_queue.put(error_message) 
             
         elif msg == "stop":
             break
@@ -516,7 +520,7 @@ def image_recorder(overall_script_stop_event : Event,
                 # VLC cameras -----------------------------------------------
                 #------------------------------------------------------------
                 
-                for channel, receiver in receivers:
+                for channel, receiver in receivers.items():
                     if channel[:6] == "RM_VLC":
                         # get vlc image
                         receiver.open()
@@ -553,7 +557,7 @@ def image_recorder(overall_script_stop_event : Event,
                 # Depth Cameras -----------------------------------------------
                 #------------------------------------------------------------
                 
-                for channel, receiver in receivers:
+                for channel, receiver in receivers.items():
                     if channel[:8] == "RM_DEPTH":
                         # get vlc image
                         receiver.open()
@@ -598,7 +602,8 @@ def image_recorder(overall_script_stop_event : Event,
                 
             except Exception as e:
                 # Put the error message in the queue
-                out_queue.put(f"Error in image_recorder: {str(e)}")
+                error_message = f"Error in image_recorder: {str(e)}\n{traceback.format_exc()}"
+                out_queue.put(error_message)
                 
         elif msg == "stop":
             break
