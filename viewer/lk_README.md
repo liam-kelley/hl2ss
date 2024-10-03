@@ -63,7 +63,7 @@ Do the following in every new room.
 
 1. Check that the HoloLens is connected to the wifi router.
 2. Open **hl2ss** app
-3. Check IP address.
+3. Check the HoloLens IP address (readable in the high left corner of your view inside the app).
 4. Open settings > System > Holograms
 
 ### Session setup - On pc
@@ -71,7 +71,7 @@ Do the following in every new room.
 1. Make sure audio will be coming through the speaker.
 2. Make sure PC volume is at 40/100, and audio interface volume is 50%. (TODO calibrate better).
 3. **Change the room name in the following code to the current room.**
-4. Make sure the IP address is correct.
+4. Make sure the IP address argument (--host) is the same as the one in the hl2ss app.
 5. Run in a new anaconda Prompt on your windows or linux laptop:
 
 ```bash
