@@ -1,3 +1,18 @@
+# Liam Kelley's multimodal HoloLens2 dataset capture scripts
+
+Welcome. This repository is adapted from "jdibenes/hl2ss" and is meant to easily record a dataset of HoloLens2 data.
+💡 The setup and usage instructions to run my dataset capture scripts are available at "viewer/lk_README.md". Check them out!
+
+The specific scripts I've added to this repository are the following:
+
+- viewer/lk_hl2ss.py : mp.Processes for recording the streamed mesh, playing audio on the speaker, recording streamed audio, recording streamed images, and managing a recording session.
+- viewer/lk_multimodal_dataset_capture.py : The main script to run a recording session.
+- viewer/lk_README.md : Explanations on script setup and usage.
+
+Below is the original "jdibenes/hl2ss" README file.
+
+---
+
 # HoloLens 2 Sensor Streaming
 
 HoloLens 2 server software and Python client library for streaming sensor data via TCP. Created to stream HoloLens data in real time over WiFi to a Linux machine for research purposes but also works on Windows and macOS. The server is offered as a standalone application (appxbundle) or as a plugin (dll) compatible with Unity, Unreal, and native UWP applications.

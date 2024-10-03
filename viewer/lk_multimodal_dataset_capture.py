@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Liam Kelley's Multimodal Mesh-Audio-Image HL2 recording session
+# Liam Kelley's main Multimodal Mesh-Audio-Image HL2 recording script
 #------------------------------------------------------------------------------
 
 from pynput import keyboard

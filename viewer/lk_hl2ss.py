@@ -8,12 +8,10 @@ import multiprocessing as mp
 from multiprocessing.synchronize import Event
 import time
 import simpleaudio as sa
-import wave
 import numpy as np
 import matplotlib.pyplot as plt
 import open3d as o3d
 import soundfile as sf
-import cv2
 import glob
 
 
