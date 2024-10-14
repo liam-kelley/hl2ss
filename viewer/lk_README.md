@@ -2,6 +2,13 @@
 
 This README explains how to setup and use my scripts.
 
+These include:
+
+- viewer/lk_multimodal_dataset_capture.py : The main script to run a recording session.
+- viewer/lk_hl2ss.py : mp.Processes for recording the streamed mesh, playing audio on the speaker, recording streamed audio, recording streamed images, and managing a recording session.
+- viewer/lk_basic_audio_recorder.py : A minimal audio recorder example.
+- viewer/lk_basic_audio_player.py : A minimal audio player example.
+
 ---
 
 ## 🚧 Initial setup
