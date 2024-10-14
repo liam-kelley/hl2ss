@@ -14,7 +14,7 @@ On the laptop, clone this repository, and install the required libraries in a hl
 conda create -n hl2ss python=3.9
 y
 conda activate hl2ss
-python -m pip install numpy==1.26.4 open3d pynput opencv-python av simpleaudio soundfile
+python -m pip install numpy==1.26.4 open3d pynput opencv-python av simpleaudio soundfile pyaudio
 ```
 
 You can test your open3d installation like this.
