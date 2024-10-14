@@ -6,7 +6,9 @@
 # Press stop to stop recording.
 # 
 # Note: Using a "producer" might be overkill since we're only recording audio.
-# Maybe a method using only the receiver could be cleaner, but this works.
+# Maybe a method using only the receiver could be cleaner? But this should work just fine.
+# 
+# Note: This script is untested because I don't have a HoloLens2 !
 #------------------------------------------------------------------------------
 
 from pynput import keyboard
