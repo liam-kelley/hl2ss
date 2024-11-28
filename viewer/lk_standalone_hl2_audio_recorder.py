@@ -3,14 +3,14 @@
 #
 # Note: This script is untested on real data because I don't have a HoloLens2 !
 #
-# Usage in anaconda shell
+# Run the script in an anaconda shell
 # ```bash
 # conda activate hl2ss
 # cd Documents/Work/telecom/hl2ss/viewer
 # python lk_standalone_hl2_audio_recorder.py
 # ```
 #
-# Test setup
+# Test flags
 # ```bash
 # python lk_standalone_hl2_audio_recorder.py -v -t -d
 # ```
